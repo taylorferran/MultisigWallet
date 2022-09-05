@@ -126,7 +126,7 @@ describe("Multisig wallet contract ", function () {
 
   it("Create wallet with two cosigners, create transaction, have ONE cosigners validate the transaction, have a dummy address try and validate it, check the amount stays in the multisig wallet", async function () {
 
-    const [addr1, addr2, addr3] = await ethers.getSigners();
+    const [addr1, addr2, addr3, addr4] = await ethers.getSigners();
 
     const addr3Balance = ethers.BigNumber.from(await provider.getBalance(addr3.address));
 
@@ -158,10 +158,10 @@ describe("Multisig wallet contract ", function () {
     await hardhatToken.connect(addr1).validateTransaction("TestWallet", 0);
 
     await expect (
-      hardhatToken.connect(addr3).validateTransaction("TestWallet", 0)
+      hardhatToken.connect(addr4).validateTransaction("TestWallet", 0)
     ).to.be.revertedWith("Wallet not a member of this multi sig.");
     
-    const afterTransaction = ethers.BigNumber.from("10000999917076501988036");
+    const afterTransaction = ethers.BigNumber.from(addr3Balance);
 
     expect(await provider.getBalance(addr3.address)).to.equal(afterTransaction);
 

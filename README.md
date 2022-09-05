@@ -1,13 +1,5 @@
-# Sample Hardhat Project
+Here I've created a multisignature wallet on ethereum using solidity
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+I've tested the happy cases so far in remix and now need to finish off the unit testing in hardhat
 
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-GAS_REPORT=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.js
-```
+I didn't use any resources from existing multisig wallet contracts, so after I've completed this I'll read them after to see what I could do better here.

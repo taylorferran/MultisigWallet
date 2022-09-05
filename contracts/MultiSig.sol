@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 
-contract MultiSig {
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+contract MultiSig is ReentrancyGuard {
 
     // Mapping to store each multi sig wallet with a specific name
     mapping(string => wallets) walletMapping;
     // Mapping to keep track of each each signature for each transaction
-    mapping(address => mapping(string => mapping( uint => bool))) transactionPerWallet;
+    mapping(address => mapping(string => mapping(uint => bool))) transactionPerWallet;
 
     struct wallets {
         address[] addresses;
@@ -22,7 +24,12 @@ contract MultiSig {
     }
 
     modifier walletExists(string memory _walletName) {
-        require(walletMapping[_walletName].created, "Wallet not created for this ID.");
+        require(walletMapping[_walletName].created, "Wallet doesn't exist");
+        _;
+    }
+
+    modifier walletNameLengthCheck(string memory _walletName) {
+        require(bytes(_walletName).length < 20, "Wallet must be less than 20 chars");
         _;
     }
 
@@ -40,22 +47,22 @@ contract MultiSig {
     }
 
     function createMultiSigWallet(string memory _walletName, address[] memory _addressList) 
-    public {
-        require(!walletMapping[_walletName].created, "Wallet already created with this name.");
+    external {
+        require(_addressList.length < 10 && _addressList.length > 1, "2-10 address count allowed");
+        require(!walletMapping[_walletName].created, "Wallet with this name exists");
         walletMapping[_walletName].created = true;
         walletMapping[_walletName].addresses = _addressList;
     }
 
     function depositToWallet(string memory _walletName, uint amount) 
-    public payable walletExists(_walletName) {
-        require(msg.value == amount, "Amount sent not the same as amount specified.");
+    external payable walletExists(_walletName) {
+        require(msg.value == amount, "Amount sent incorrect");
         walletMapping[_walletName].amountStored += amount;
     }
 
     function createTransaction(string memory _walletName, address _depositAddress, uint _amount) 
-    public walletExists(_walletName) isAddressMemberOfMultisig(_walletName) {
+    external walletExists(_walletName) isAddressMemberOfMultisig(_walletName) {
 
-        address[] memory walletList = walletMapping[_walletName].addresses;
         uint _num_of_wallets = walletMapping[_walletName].addresses.length;
 
         transactions memory createdTransaction = transactions(
@@ -65,24 +72,26 @@ contract MultiSig {
                 signatures : _num_of_wallets
             }
         );
+
         walletMapping[_walletName].transactions.push(createdTransaction);
         uint transactionID = walletMapping[_walletName].transactions.length-1;
 
         // Set signatures ready to be signed by each address 
         for(uint i=0; i<_num_of_wallets; ++i) {
-            transactionPerWallet[walletList[i]][_walletName][transactionID] = true;
+            transactionPerWallet[walletMapping[_walletName].addresses[i]][_walletName][transactionID] = true;
         }
     }
 
 
     function validateTransaction(string memory _walletName, uint _transactionID) 
-    public walletExists(_walletName) isAddressMemberOfMultisig(_walletName) {
+    external walletExists(_walletName) isAddressMemberOfMultisig(_walletName) nonReentrant {
 
-        // Check if their is a transaction to be signed at this address
-        require(transactionPerWallet[msg.sender][_walletName][_transactionID], "No valid transaction at this address/wallet/id.");
-        require(walletMapping[_walletName].transactions[_transactionID].signatures > 0, "Transaction already complete.");
+        // Check if there is a transaction to be signed at this address
+        require(transactionPerWallet[msg.sender][_walletName][_transactionID], "Txn doesn't exist");
+        require(walletMapping[_walletName].transactions[_transactionID].signatures > 0, "Transaction already finished");
         // Set it to false to set it as "signed off"
         transactionPerWallet[msg.sender][_walletName][_transactionID] = false;
+        // Minus one signature, when it hits 0 we send the transaction as all parties have confirmed the transaction
         walletMapping[_walletName].transactions[_transactionID].signatures -=1;
 
         // Check if all wallets have signed off on the transaction
@@ -95,19 +104,19 @@ contract MultiSig {
     } 
 
     function viewTransaction(string memory _walletName, uint _transactionID) 
-    public view walletExists(_walletName) returns(bool) {
+    external view walletExists(_walletName) returns(bool) {
         // TODO handle false case correctly
         bool exists = walletMapping[_walletName].transactions[_transactionID].signatures > 0 ? true : false;
         return(exists);
     }
 
     function checkWalletExists(string memory _walletName) 
-    public view returns (bool) {
+    external view returns (bool) {
         return (walletMapping[_walletName].created);
     }
 
     function checkWalletAmount(string memory _walletName)
-    public view returns(uint) {
+    external view returns(uint) {
         return walletMapping[_walletName].amountStored;
     }
 

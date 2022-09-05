@@ -7,7 +7,16 @@ require("@nomiclabs/hardhat-etherscan");
   const API_KEY = process.env.API_KEY;
 
 module.exports = {
-  solidity: "0.8.16",
+  solidity: {
+  version: "0.8.16",
+  settings: {
+    optimizer: {
+      enabled: true,
+      runs: 1000,
+    },
+  },
+},
+
   networks: {
     rinkeby: {
       url: ALCHEMY_URL,
@@ -20,4 +29,11 @@ module.exports = {
       rinkeby: API_KEY
     },
   },
+
+  gasReporter: {
+    enabled: (process.env.REPORT_GAS) ? true : false
+  }
+
+
+
 };
