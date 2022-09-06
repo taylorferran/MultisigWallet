@@ -79,8 +79,10 @@ describe("Multisig wallet contract ", function () {
 
     expect(await hardhatToken.connect(addr1).checkWalletExists("TestWallet")).to.equal(true);
 
+    // Deposit ether
     await hardhatToken.connect(addr1).depositToWallet("TestWallet", 100000000000, { value: ethers.utils.parseEther("0.0000001") });
 
+    // Validate it's saved to the correct wallet id
     expect(await hardhatToken.connect(addr1).checkWalletAmount("TestWallet")).to.equal(100000000000);
 
   });
@@ -109,6 +111,7 @@ describe("Multisig wallet contract ", function () {
     
     expect(await provider.getBalance(addr3.address)).to.equal(addr3Balance);
 
+    // Create txn to send one ether to address3
     await hardhatToken.connect(addr1).createTransaction("TestWallet", addr3.address, oneETH);
     expect(await hardhatToken.connect(addr1).viewTransaction("TestWallet", 0)).to.equal(true);
 
@@ -116,7 +119,9 @@ describe("Multisig wallet contract ", function () {
 
     expect(await provider.getBalance(addr3.address)).to.equal(addr3Balance);
 
+    // Sign off on transaction with addr1 and addr2
     await hardhatToken.connect(addr1).validateTransaction("TestWallet", 0);
+    // Signatures will hit 0 here and ether will get sent out by contract
     await hardhatToken.connect(addr2).validateTransaction("TestWallet", 0);
     
     expect(await provider.getBalance(addr3.address)).to.equal(addr3Balance.add(oneETH));
@@ -147,7 +152,8 @@ describe("Multisig wallet contract ", function () {
     expect(await hardhatToken.connect(addr1).checkWalletAmount("TestWallet")).to.equal(oneETH);
     
     expect(await provider.getBalance(addr3.address)).to.equal(addr3Balance);
-
+    
+    // Create txn to send one ether to address3
     await hardhatToken.connect(addr1).createTransaction("TestWallet", addr3.address, oneETH);
     expect(await hardhatToken.connect(addr1).viewTransaction("TestWallet", 0)).to.equal(true);
 
@@ -155,14 +161,17 @@ describe("Multisig wallet contract ", function () {
 
     expect(await provider.getBalance(addr3.address)).to.equal(addr3Balance);
 
+    // Sign off on transaction with addr1 and addr4
     await hardhatToken.connect(addr1).validateTransaction("TestWallet", 0);
 
+    // Addr4 is not apart of the multisig so this will fail
     await expect (
       hardhatToken.connect(addr4).validateTransaction("TestWallet", 0)
     ).to.be.revertedWith("Wallet not a member of this multi sig.");
     
     const afterTransaction = ethers.BigNumber.from(addr3Balance);
 
+    // ether not sent to address, still pending sign off from addr2
     expect(await provider.getBalance(addr3.address)).to.equal(afterTransaction);
 
 

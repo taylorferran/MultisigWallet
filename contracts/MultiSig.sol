@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract MultiSig is ReentrancyGuard {
 
+    // VARIABLES ///
+
     // Mapping to store each multi sig wallet with a specific name
     mapping(string => wallets) walletMapping;
     // Mapping to keep track of each each signature for each transaction
@@ -23,16 +25,21 @@ contract MultiSig is ReentrancyGuard {
         uint signatures;
     }
 
+    /// MODIFIERS ///
+
+    // Check wallet has been created
     modifier walletExists(string memory _walletName) {
         require(walletMapping[_walletName].created, "Wallet doesn't exist");
         _;
     }
 
+    // Only allow wallet name with 20 chars or less
     modifier walletNameLengthCheck(string memory _walletName) {
         require(bytes(_walletName).length < 20, "Wallet must be less than 20 chars");
         _;
     }
 
+    // Check address is a member of the multisig wallet it's trying to access
     modifier isAddressMemberOfMultisig(string memory _walletName) {
         uint addressCount = walletMapping[_walletName].addresses.length;
         address[] memory addresses = walletMapping[_walletName].addresses;
@@ -46,6 +53,16 @@ contract MultiSig is ReentrancyGuard {
         _;
     }
 
+    /// WRITES ///
+
+    /* 
+        Here we create a wallet with a unique string as the wallet key, and pass in an array list
+        This array list are all of the members of the multisig wallet that have to sign off on 
+        any transaction that is proposed by another member.
+
+        ** TODO: Add check to disallow the same address or 0x0 address
+    */
+
     function createMultiSigWallet(string memory _walletName, address[] memory _addressList) 
     external {
         require(_addressList.length < 10 && _addressList.length > 1, "2-10 address count allowed");
@@ -54,17 +71,32 @@ contract MultiSig is ReentrancyGuard {
         walletMapping[_walletName].addresses = _addressList;
     }
 
+    /*
+        Any address can deposit to any wallet. Just check it exists.
+        
+        ** TODO: Calculate in eth instead of wei 
+    */
+
     function depositToWallet(string memory _walletName, uint amount) 
     external payable walletExists(_walletName) {
         require(msg.value == amount, "Amount sent incorrect");
         walletMapping[_walletName].amountStored += amount;
     }
 
+    /*
+        Any member of the multisig wallet can propose a transaction, they must submit the wallet name, 
+        address to send eth to, and the amount of eth to send. 
+
+        ** TODO: Calculate in eth instead of wei 
+    */
+
     function createTransaction(string memory _walletName, address _depositAddress, uint _amount) 
     external walletExists(_walletName) isAddressMemberOfMultisig(_walletName) {
 
+        // Check how many signatures are needed to sign off on the transaction
         uint _num_of_wallets = walletMapping[_walletName].addresses.length;
 
+        // Create transaction struct to place into map
         transactions memory createdTransaction = transactions(
             {
                 depositAddress : _depositAddress,
@@ -73,6 +105,7 @@ contract MultiSig is ReentrancyGuard {
             }
         );
 
+        // Add transaction to it's correct wallet
         walletMapping[_walletName].transactions.push(createdTransaction);
         uint transactionID = walletMapping[_walletName].transactions.length-1;
 
@@ -82,6 +115,12 @@ contract MultiSig is ReentrancyGuard {
         }
     }
 
+    /*
+        Validate transaction works by each member of the wallet having to call this function
+        Once a member validates a transaction, their signature is set to false and the wallet
+        signature count is decremented. Once the signature count is 0 this means all members
+        have signed off and we can send the ether to the deposit address.
+    */
 
     function validateTransaction(string memory _walletName, uint _transactionID) 
     external walletExists(_walletName) isAddressMemberOfMultisig(_walletName) nonReentrant {
@@ -102,6 +141,8 @@ contract MultiSig is ReentrancyGuard {
         }
 
     } 
+
+    /// READS ///
 
     function viewTransaction(string memory _walletName, uint _transactionID) 
     external view walletExists(_walletName) returns(bool) {

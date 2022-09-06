@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.16;
+
+import "./MultiSig.sol";
+
+
+contract A { 
+   uint256 public TEST;
+}
+
+contract MultiSigView is MultiSig {
+
+    // address payable public multisigCore;
+
+    // constructor(address _multsigCore)
+    // {
+    //     multisigCore = payable(_multsigCore);
+    // }
+
+    // // function viewTransaction(string memory _walletName, uint _transactionID) 
+    // // external view walletExists(_walletName) returns(bool) {
+    // //     TODO handle false case correctly
+    // //     bool exists = walletMapping[_walletName].transactions[_transactionID].signatures > 0 ? true : false;
+    // //     return(exists);
+    // // }
+
+    //  function checkWalletExists(string memory _walletName) 
+    //  external view returns (bool) {
+    //      return (walletMapping[_walletName].created);
+    //  }
+
+    // function checkWalletAmount(string memory _walletName)
+    // public view returns(uint) {
+    //     //MultiSig core = MultiSig(multisigCore);
+    //     //return walletMapping[_walletName].amountStored;
+    //     A my_A = A(multisigCore);
+    //     return A.TEST;
+    // }
+    
+}
