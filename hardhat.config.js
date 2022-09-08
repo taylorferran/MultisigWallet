@@ -1,6 +1,7 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("dotenv").config({ path: ".env" });
 require("@nomiclabs/hardhat-etherscan");
+require('solidity-coverage');
 
   const ALCHEMY_URL = process.env.ALCHEMY_URL;
   const RINKEBY_PRIVATE_KEY = process.env.RINKEBY_PRIVATE_KEY;

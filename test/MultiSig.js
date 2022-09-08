@@ -86,6 +86,133 @@ describe("Multisig wallet contract ", function () {
     expect(await hardhatToken.connect(addr1).checkWalletAmount("TestWallet")).to.equal(100000000000);
 
   });
+/*
+  it("Check non existing wallet returns the correct error", async function () {
+
+    const [addr1, addr2] = await ethers.getSigners();
+
+    const MultiSig = await ethers.getContractFactory("MultiSig");
+
+    const hardhatToken = await MultiSig.deploy();
+
+    const addressArray = [addr1.address, addr2.address];
+
+    await hardhatToken.connect(addr1).createMultiSigWallet("TestWallet", addressArray);
+
+    await expect (
+      expect(await hardhatToken.connect(addr1).checkWalletExists("ZZZZZZ"))
+    ).to.be.revertedWith("Wallet doesn't exist");
+
+  });
+
+*/
+  it("Check creating wallet with over 20 characters returns correct error", async function () {
+
+    const [addr1, addr2] = await ethers.getSigners();
+
+    const MultiSig = await ethers.getContractFactory("MultiSig");
+
+    const hardhatToken = await MultiSig.deploy();
+
+    const addressArray = [addr1.address, addr2.address];
+
+    await expect (
+      hardhatToken.connect(addr1).createMultiSigWallet("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", addressArray)
+    ).to.be.revertedWith("Wallet must be less than 20 chars");
+
+  });
+
+  it("Check creating wallet with less than 2 addresses returns an error", async function () {
+
+    const [addr1, addr2] = await ethers.getSigners();
+
+    const MultiSig = await ethers.getContractFactory("MultiSig");
+
+    const hardhatToken = await MultiSig.deploy();
+
+    const addressArray = [addr1.address];
+
+    await expect (
+      hardhatToken.connect(addr1).createMultiSigWallet("xx", addressArray)
+    ).to.be.revertedWith("2-10 address count allowed");
+
+
+  });
+
+  it("Check creating wallet with over 10 addresses returns an error", async function () {
+
+    const [addr1, addr2] = await ethers.getSigners();
+
+    const MultiSig = await ethers.getContractFactory("MultiSig");
+
+    const hardhatToken = await MultiSig.deploy();
+
+    const addressArray = [addr1.address, addr1.address, addr1.address, addr1.address, addr1.address, addr1.address, 
+      addr1.address, addr1.address, addr1.address, addr1.address, addr1.address];
+
+    await expect (
+      hardhatToken.connect(addr1).createMultiSigWallet("xx", addressArray)
+    ).to.be.revertedWith("2-10 address count allowed");
+
+
+  });
+
+  it("Check creating wallet with the same name as another returns an error", async function () {
+
+    const [addr1, addr2] = await ethers.getSigners();
+
+    const MultiSig = await ethers.getContractFactory("MultiSig");
+
+    const hardhatToken = await MultiSig.deploy();
+
+    const addressArray = [addr1.address, addr1.address];
+
+    hardhatToken.connect(addr1).createMultiSigWallet("xx", addressArray);
+
+    await expect (
+      hardhatToken.connect(addr1).createMultiSigWallet("xx", addressArray)
+    ).to.be.revertedWith("Wallet with this name exists");
+
+
+  });
+
+  it("Deposit and check multisig wallet amount using fallback", async function () {
+
+    const [addr1, addr2] = await ethers.getSigners();
+
+    const MultiSig = await ethers.getContractFactory("MultiSig");
+
+    const hardhatToken = await MultiSig.deploy();
+
+    const addressArray = [addr1.address, addr2.address];
+
+    await hardhatToken.connect(addr1).createMultiSigWallet("TestWallet", addressArray);
+
+    expect(await hardhatToken.connect(addr1).checkWalletExists("TestWallet")).to.equal(true);
+
+    // Deposit ether
+    await hardhatToken.connect(addr1).depositToWallet("TestWallet", 100000000000, { value: ethers.utils.parseEther("0.0000001") });
+
+    // Validate it's saved to the correct wallet id
+    expect(await hardhatToken.connect(addr1).checkWalletAmount("TestWallet")).to.equal(100000000000);
+
+  });
+
+  if("Check txn that doesn't exist returns false", async function () {
+
+    const [addr1] = await ethers.getSigners();
+
+    const MultiSig = await ethers.getContractFactory("MultiSig");
+    
+    const hardhatToken = await MultiSig.deploy();
+
+    const addressArray = [addr1.address, addr2.address];
+
+    await hardhatToken.connect(addr1).createMultiSigWallet("TestWallet", addressArray);
+
+    expect(await hardhatToken.connect(addr1).viewTransaction("TestWallet", 10)).to.equal(false);
+
+  });
 
   it("Create wallet with two cosigners, create transaction, have the cosigners validate the transaction, check the amount gets to the deposit address", async function () {
 

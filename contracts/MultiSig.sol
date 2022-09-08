@@ -28,14 +28,8 @@ contract MultiSig is ReentrancyGuard {
     /// MODIFIERS ///
 
     // Check wallet has been created
-    modifier walletExists(string memory _walletName) {
+    modifier walletNameCheck (string memory _walletName) {
         require(walletMapping[_walletName].created, "Wallet doesn't exist");
-        _;
-    }
-
-    // Only allow wallet name with 20 chars or less
-    modifier walletNameLengthCheck(string memory _walletName) {
-        require(bytes(_walletName).length < 20, "Wallet must be less than 20 chars");
         _;
     }
 
@@ -65,7 +59,8 @@ contract MultiSig is ReentrancyGuard {
 
     function createMultiSigWallet(string memory _walletName, address[] memory _addressList) 
     external {
-        require(_addressList.length < 10 && _addressList.length > 1, "2-10 address count allowed");
+        require(bytes(_walletName).length < 20, "Wallet must be less than 20 chars");
+        require(_addressList.length <= 10 && _addressList.length > 1, "2-10 address count allowed");
         require(!walletMapping[_walletName].created, "Wallet with this name exists");
         walletMapping[_walletName].created = true;
         walletMapping[_walletName].addresses = _addressList;
@@ -78,7 +73,7 @@ contract MultiSig is ReentrancyGuard {
     */
 
     function depositToWallet(string memory _walletName, uint amount) 
-    external payable walletExists(_walletName) {
+    external payable walletNameCheck(_walletName) {
         require(msg.value == amount, "Amount sent incorrect");
         walletMapping[_walletName].amountStored += amount;
     }
@@ -91,7 +86,7 @@ contract MultiSig is ReentrancyGuard {
     */
 
     function createTransaction(string memory _walletName, address _depositAddress, uint _amount) 
-    external walletExists(_walletName) isAddressMemberOfMultisig(_walletName) {
+    external walletNameCheck(_walletName) isAddressMemberOfMultisig(_walletName) {
 
         // Check how many signatures are needed to sign off on the transaction
         uint _num_of_wallets = walletMapping[_walletName].addresses.length;
@@ -123,7 +118,7 @@ contract MultiSig is ReentrancyGuard {
     */
 
     function validateTransaction(string memory _walletName, uint _transactionID) 
-    external walletExists(_walletName) isAddressMemberOfMultisig(_walletName) nonReentrant {
+    external walletNameCheck(_walletName) isAddressMemberOfMultisig(_walletName) nonReentrant {
 
         // Check if there is a transaction to be signed at this address
         require(transactionPerWallet[msg.sender][_walletName][_transactionID], "Txn doesn't exist");
@@ -145,14 +140,14 @@ contract MultiSig is ReentrancyGuard {
     /// READS ///
 
     function viewTransaction(string memory _walletName, uint _transactionID) 
-    external view walletExists(_walletName) returns(bool) {
+    external view walletNameCheck(_walletName) returns(bool) {
         // TODO handle false case correctly
         bool exists = walletMapping[_walletName].transactions[_transactionID].signatures > 0 ? true : false;
         return(exists);
     }
 
     function checkWalletExists(string memory _walletName) 
-    external view returns (bool) {
+    external view walletNameCheck(_walletName) returns (bool) {
         return (walletMapping[_walletName].created);
     }
 
