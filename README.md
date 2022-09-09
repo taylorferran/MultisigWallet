@@ -11,7 +11,7 @@ progress.
 - [x] Unit testing
 - [x] 100% line and function coverage in the unit testing
 - [ ] Deployed contract on testnet
-- [ ] Verified contract on testnet
+- [ ] Verified contract on testnzet
 - [ ] Front end built to interact with it
 - [ ] Automated security checks (slither/echidna)
 - [ ] Manual security audit
@@ -20,7 +20,7 @@ progress.
 - [ ] Verified contract on main net
 
 
-The only function not tested is the default solidity fallback function.
+The only function not tested is the default solidity fallback function
 
 |---------------|----------|----------|----------|----------|----------------|
 |File           |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
