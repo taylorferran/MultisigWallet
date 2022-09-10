@@ -1,0 +1,147 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0x69611aD0093A5dC18cC37166889c561CF81fDAf5",
+    "txHash": "0xec761643d83b9ca00871b741dcda45de21c88705debb0ffa9820c9578fe6adbc"
+  },
+  "proxies": [
+    {
+      "address": "0x1318023d522ede65a9B3D55b690e52877731f53b",
+      "txHash": "0xa070d3e1fedc50439694739bf11492671fc50c5fef30a4da8667c6d564519a20",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "96b4c5d817a4972f0b37e70e6671cfea7d495ab4836b4d979ba7f9df75673db8": {
+      "address": "0x3C2C48f07330b9D5D65AB40CCE933d8B304Ab344",
+      "txHash": "0x607b3ef7b5a46e60f36df1e0543fdbb91ee1665e47b8941c89af09af2ee22727",
+      "layout": {
+        "storage": [
+          {
+            "label": "walletMapping",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_string_memory_ptr,t_struct(wallets)26_storage)",
+            "contract": "MultiSig",
+            "src": "contracts/MultiSig.sol:11"
+          },
+          {
+            "label": "transactionPerWallet",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_mapping(t_address,t_mapping(t_string_memory_ptr,t_mapping(t_uint256,t_bool)))",
+            "contract": "MultiSig",
+            "src": "contracts/MultiSig.sol:13"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "MultiSig",
+            "src": "contracts/MultiSig.sol:66"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(transactions)33_storage)dyn_storage": {
+            "label": "struct MultiSig.transactions[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_mapping(t_string_memory_ptr,t_mapping(t_uint256,t_bool)))": {
+            "label": "mapping(address => mapping(string => mapping(uint256 => bool)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_string_memory_ptr,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(string => mapping(uint256 => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_string_memory_ptr,t_struct(wallets)26_storage)": {
+            "label": "mapping(string => struct MultiSig.wallets)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_string_memory_ptr": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(transactions)33_storage": {
+            "label": "struct MultiSig.transactions",
+            "members": [
+              {
+                "label": "depositAddress",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "amountToSend",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "signatures",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(wallets)26_storage": {
+            "label": "struct MultiSig.wallets",
+            "members": [
+              {
+                "label": "addresses",
+                "type": "t_array(t_address)dyn_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "amountStored",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "transactions",
+                "type": "t_array(t_struct(transactions)33_storage)dyn_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "created",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string"
+          }
+        }
+      }
+    }
+  }
+}

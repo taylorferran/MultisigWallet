@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
-contract MultiSig is ReentrancyGuard {
+contract MultiSig {
 
     // VARIABLES ///
 
@@ -25,7 +23,9 @@ contract MultiSig is ReentrancyGuard {
         uint signatures;
     }
 
-    /// MODIFIERS ///
+    /// MODIFIERS //
+
+
 
     // Check wallet has been created
     modifier walletNameCheck (string memory _walletName) {
@@ -46,6 +46,48 @@ contract MultiSig is ReentrancyGuard {
         require(auth, "Wallet not a member of this multi sig.");
         _;
     }
+
+    /// UPGRADE FUNCTIONALITY ///
+
+    /*
+       Here I'm manually adding the openzepplin reentrancy guard 
+       so that we can make this contract upgradeable
+
+       TODO: Revisit, clean up or decide if we even need reentrancy guards
+       in this contract, it's only used once, maybe we can implement a more
+       simple one
+    */
+
+    uint256 private constant _NOT_ENTERED = 1;
+    uint256 private constant _ENTERED = 2;
+
+    uint256 private _status;
+
+       modifier nonReentrant() {
+        _nonReentrantBefore();
+        _;
+        _nonReentrantAfter();
+    }
+
+    function _nonReentrantBefore() private {
+        // On the first call to nonReentrant, _notEntered will be true
+        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+
+        // Any calls to nonReentrant after this point will fail
+        _status = _ENTERED;
+    }
+
+    function _nonReentrantAfter() private {
+        // By storing the original value once again, a refund is triggered (see
+        // https://eips.ethereum.org/EIPS/eip-2200)
+        _status = _NOT_ENTERED;
+    }
+    
+    
+    function initialize() external {
+        _status = _NOT_ENTERED;
+    }
+
 
     /// WRITES ///
 
