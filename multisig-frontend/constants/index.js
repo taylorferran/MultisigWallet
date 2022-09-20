@@ -1,4 +1,4 @@
-export const MULTISIG_ADDRESS = "0xca8A5BAD7d35F8CFc2212EcB5eb3525E12cC8b4f"
+export const MULTISIG_ADDRESS = "0xC57d32a6B92a96416323959d086A7e19F2ea979F"
 
 export const abi = [
     {
