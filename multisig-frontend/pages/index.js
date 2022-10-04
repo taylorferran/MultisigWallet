@@ -76,7 +76,7 @@ export default function Home() {
     /**
    * createMultiSigWallet creates a multisig wallet with the current parameters
    */
-     const viewWalletButton = async () => {
+     const viewWallet = async () => {
       try {
         // We need a Signer here since this is a 'write' transaction.
         const signer = await getProviderOrSigner(true);
@@ -88,8 +88,11 @@ export default function Home() {
           signer
         );
         const tx = await multsigContract.checkWalletExists(String(viewWalletString));
-        // wait for the transaction to get mined
-        await tx.wait();
+
+        if(tx) {
+          alert("Wallet exists");
+        }
+        alert
       } catch (err) {
         console.error(err);
       }
@@ -131,9 +134,20 @@ export default function Home() {
     }
   };
 
-  // useEffects are used to react to changes in state of the website
-  // The array at the end of function call represents what state changes will trigger this effect
-  // In this case, whenever the value of `walletConnected` changes - this effect will be called
+  /*
+    viewWalletButton
+  */
+    const viewWalletButton = () => {
+      if (walletConnected) {
+          return (
+            <button onClick={viewWallet} className={styles.button}>
+              View Wallet
+            </button>
+          );
+      }
+    };
+
+
   useEffect(() => {
     // if wallet is not connected, create a new instance of Web3Modal and connect the MetaMask wallet
     if (!walletConnected) {
@@ -168,6 +182,7 @@ export default function Home() {
             className={styles.input}
             />
             {createWalletButton()}
+            {viewWalletButton()}
         </div>
 
         
