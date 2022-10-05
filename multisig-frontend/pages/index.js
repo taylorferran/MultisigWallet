@@ -98,7 +98,28 @@ export default function Home() {
       }
     };
 
+    /**
+   * createMultiSigWallet creates a multisig wallet with the current parameters
+   */
+     const viewWalletAmount = async () => {
+      try {
+        // We need a Signer here since this is a 'write' transaction.
+        const signer = await getProviderOrSigner(true);
+        // Create a new instance of the Contract with a Signer, which allows
+        // update methods
+        const multsigContract = new Contract(
+          MULTISIG_ADDRESS,
+          abi,
+          signer
+        );
+        const tx = await multsigContract.checkWalletAmount(String(viewWalletString));
 
+        alert(tx);
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
   /*
     connectWallet: Connects the MetaMask wallet
@@ -147,6 +168,19 @@ export default function Home() {
       }
     };
 
+  /*
+    viewWalletAmountButton
+  */
+    const viewWalletAmountButton = () => {
+      if (walletConnected) {
+          return (
+            <button onClick={viewWalletAmount} className={styles.button}>
+              View Wallet Amount
+            </button>
+          );
+      }
+    };
+
 
   useEffect(() => {
     // if wallet is not connected, create a new instance of Web3Modal and connect the MetaMask wallet
@@ -183,6 +217,7 @@ export default function Home() {
             />
             {createWalletButton()}
             {viewWalletButton()}
+            {viewWalletAmountButton()}
         </div>
 
         

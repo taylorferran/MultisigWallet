@@ -16,7 +16,7 @@ https://rinkeby.etherscan.io/address/0x3c2c48f07330b9d5d65ab40cce933d8b304ab344#
 - [x] Make contract upgradable
 https://rinkeby.etherscan.io/address/0x1318023d522ede65a9b3d55b690e52877731f53b
 https://rinkeby.etherscan.io/address/0x69611ad0093a5dc18cc37166889c561cf81fdaf5
-- [ ] Gas optimisation
+- [x] Gas optimisation
 - [ ] Front end built to interact with it
 - [ ] Automated security checks (slither/echidna)
 - [ ] Manual security audit
