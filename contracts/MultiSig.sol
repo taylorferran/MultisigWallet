@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 
+/// @title A multisig wallet creator all produced in one contract
+/// @author Taylor Ferran
+
 contract MultiSig {
 
     // VARIABLES ///
@@ -23,17 +26,19 @@ contract MultiSig {
         uint signatures;
     }
 
-    /// MODIFIERS //
+    /// MODIFIERS ///
 
-
-
-    // Check wallet has been created
+    /// @notice Checks if a wallet with this specific name has been created yet
+    /// @dev If a wallet has been added to the mapping already then it will return false
+    /// @param _walletName is a string of a wallet name the user wants to create/view/add a transaction
     modifier walletNameCheck (string memory _walletName) {
         require(walletMapping[_walletName].created, "Wallet doesn't exist");
         _;
     }
 
-    // Check address is a member of the multisig wallet it's trying to access
+    /// @notice Check if an address trying to interact with a multisig wallet is a member of that multisig wallet 
+    /// @dev Use this to verify or creare transactions for a specific wallet
+    /// @param _walletName is a string of a wallet name the user wants to create/view/add a transaction
     modifier isAddressMemberOfMultisig(string memory _walletName) {
         uint addressCount = walletMapping[_walletName].addresses.length;
         address[] memory addresses = walletMapping[_walletName].addresses;
