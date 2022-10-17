@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.16;
 
-/// @title A multisig wallet creator all produced in one contract
+/// @title A multisig wallet creator, saving wallets by keys as a string in mappings
 /// @author Taylor Ferran
 
 contract MultiSig {
@@ -93,17 +93,12 @@ contract MultiSig {
         _status = _NOT_ENTERED;
     }
 
-
     /// WRITES ///
 
-    /* 
-        Here we create a wallet with a unique string as the wallet key, and pass in an array list
-        This array list are all of the members of the multisig wallet that have to sign off on 
-        any transaction that is proposed by another member.
-
-        ** TODO: Add check to disallow the same address or 0x0 address
-    */
-
+    /// @notice Creates a multisig wallet that is identified by string name and list of addresses
+    /// @dev Add wallet details to wallet mapping, TODO: better address verifitcation 
+    /// @param _walletName is a string of a wallet name the user wants to create/view/add a transaction
+    /// @param _addressList is a list of addresses which can verify or create transactions for the wallet
     function createMultiSigWallet(string memory _walletName, address[] memory _addressList) 
     external {
         require(bytes(_walletName).length < 20, "Wallet must be less than 20 chars");
@@ -113,25 +108,21 @@ contract MultiSig {
         walletMapping[_walletName].addresses = _addressList;
     }
 
-    /*
-        Any address can deposit to any wallet. Just check it exists.
-        
-        ** TODO: Calculate in eth instead of wei 
-    */
-
-    function depositToWallet(string memory _walletName, uint amount) 
+    /// @notice Deposits eth to a wallet using wallet name
+    /// @dev Save ETH in the contract itself and saved amount stored in the walletMapping mapping
+    /// @param _walletName is a string of a wallet name the user wants to create/view/add a transaction
+    /// @param _amount is the amount in ETH the user has deposited
+    function depositToWallet(string memory _walletName, uint _amount) 
     external payable walletNameCheck(_walletName) {
-        require(msg.value == amount, "Amount sent incorrect");
-        walletMapping[_walletName].amountStored += amount;
+        require(msg.value == _amount, "Amount sent incorrect");
+        walletMapping[_walletName].amountStored += _amount;
     }
 
-    /*
-        Any member of the multisig wallet can propose a transaction, they must submit the wallet name, 
-        address to send eth to, and the amount of eth to send. 
-
-        ** TODO: Calculate in eth instead of wei 
-    */
-
+    /// @notice create a transaction which needs verified by all members of the multsig
+    /// @dev Add transaction to transaction mapping, set all addresses in that multisig to be ready to sign it
+    /// @param _walletName is a string of a wallet name the user wants to create/view/add a transaction
+    /// @param _depositAddress is the address in which the ETH will be sent when all members of multisig have signed off on the transaction
+    /// @param _amount is the amount in ETH the transaction will send from the multisig 
     function createTransaction(string memory _walletName, address _depositAddress, uint _amount) 
     external walletNameCheck(_walletName) isAddressMemberOfMultisig(_walletName) {
 
@@ -157,13 +148,10 @@ contract MultiSig {
         }
     }
 
-    /*
-        Validate transaction works by each member of the wallet having to call this function
-        Once a member validates a transaction, their signature is set to false and the wallet
-        signature count is decremented. Once the signature count is 0 this means all members
-        have signed off and we can send the ether to the deposit address.
-    */
-
+    /// @notice sign off on a transaction if the caller is a member of this wallet and the transaction exists, transaction sends ETH if this is the last wallet to sign
+    /// @dev Update wallet mappings, check if all wallets have signed the transaction, send eth if no more wallets to sign
+    /// @param _walletName is a string of a wallet name the user wants to create/view/add a transaction
+    /// @param _transactionID is the string of the transaction to sign
     function validateTransaction(string memory _walletName, uint _transactionID) 
     external walletNameCheck(_walletName) isAddressMemberOfMultisig(_walletName) nonReentrant {
 
@@ -177,6 +165,8 @@ contract MultiSig {
 
         // Check if all wallets have signed off on the transaction
         if(walletMapping[_walletName].transactions[_transactionID].signatures == 0) {
+            require(walletMapping[_walletName].amountStored >= walletMapping[_walletName].transactions[_transactionID].amountToSend, "Not enough ETH in wallet");
+            walletMapping[_walletName].amountStored -= walletMapping[_walletName].transactions[_transactionID].amountToSend;
             // Send eth to deposit address
             (bool sent, ) = walletMapping[_walletName].transactions[_transactionID].depositAddress.call{value: walletMapping[_walletName].transactions[_transactionID].amountToSend}("");
             require(sent, "Transaction failed.");
