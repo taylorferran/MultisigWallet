@@ -176,6 +176,9 @@ contract MultiSig {
 
     /// READS ///
 
+    /// @notice Return true or false if a transaction for a specific wallet exists or not
+    /// @param _walletName is a string of a wallet name the user wants to create/view/add a transaction
+    /// @param _transactionID is the string of the transaction to sign
     function viewTransaction(string memory _walletName, uint _transactionID) 
     external view walletNameCheck(_walletName) returns(bool) {
         // TODO handle false case correctly
@@ -183,13 +186,17 @@ contract MultiSig {
         return(exists);
     }
 
+    /// @notice Return true or false if a wallet exists or not 
+    /// @param _walletName is a string of a wallet name the user wants to create/view/add a transaction
     function checkWalletExists(string memory _walletName) 
     external view walletNameCheck(_walletName) returns (bool) {
         return (walletMapping[_walletName].created);
     }
 
+    /// @notice Return the amount of ETH stored in this multisig wallet
+    /// @param _walletName is a string of a wallet name the user wants to create/view/add a transaction
     function checkWalletAmount(string memory _walletName)
-    external view returns(uint) {
+    external view walletNameCheck(_walletName) returns(uint) {
         return walletMapping[_walletName].amountStored;
     }
 
