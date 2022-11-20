@@ -54,14 +54,13 @@ contract MultiSig {
 
     /// UPGRADE FUNCTIONALITY ///
 
-    /*
-       Here I'm manually adding the openzepplin reentrancy guard 
-       so that we can make this contract upgradeable
+    /// @dev
+    //   Here I'm manually adding the openzepplin reentrancy guard 
+    //   so that we can make this contract upgradeable
 
-       TODO: Revisit, clean up or decide if we even need reentrancy guards
-       in this contract, it's only used once, maybe we can implement a more
-       simple one
-    */
+    //   TODO: Revisit, clean up or decide if we even need reentrancy guards
+    //   in this contract, it's only used once, maybe we can implement a more
+    //   simple one
 
     uint256 private constant _NOT_ENTERED = 1;
     uint256 private constant _ENTERED = 2;

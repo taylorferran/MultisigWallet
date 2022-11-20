@@ -6,29 +6,30 @@ import { useEffect, useRef, useState } from "react";
 import { MULTISIG_ADDRESS, abi } from "../constants";
 
 export default function Home() {
-  // walletConnected keep track of whether the user's wallet is connected or not
   const [walletConnected, setWalletConnected] = useState(false);
-  // Create a reference to the Web3 Modal (used for connecting to Metamask) which persists as long as the page is open
   const web3ModalRef = useRef();
-  // Wallet name to view
-  const [viewWalletString, setViewWalletString] = useState("test");
+  const [viewWalletString, setViewWalletString] = useState("");
+  const [viewWalletForTxn, setWalletForTxn] = useState("");
+  const [viewDepositAddressForTxn, setDepositAddressForTxn] = useState("");
+  const [viewDepositAmountForTxn, setDepositAmountForTxn] = useState("");
 
   const walletName = event => {
     setViewWalletString(event.target.value);
   };
 
-  /**
-   * Returns a Provider or Signer object representing the Ethereum RPC with or without the
-   * signing capabilities of metamask attached
-   *
-   * A `Provider` is needed to interact with the blockchain - reading transactions, reading balances, reading state, etc.
-   *
-   * A `Signer` is a special type of Provider used in case a `write` transaction needs to be made to the blockchain, which involves the connected account
-   * needing to make a digital signature to authorize the transaction being sent. Metamask exposes a Signer API to allow your website to
-   * request signatures from the user using Signer functions.
-   *
-   * @param {*} needSigner - True if you need the signer, default false otherwise
-   */
+  const walletNameForTxn = event => {
+    setWalletForTxn(event.target.value);
+  };
+
+  const depositAddressForTxn = event => {
+    setDepositAddressForTxn(event.target.value);
+  };
+
+  const depositAmountForTxn = event => {
+    setDepositAmountForTxn(event.target.value);
+  };
+
+
   const getProviderOrSigner = async (needSigner = false) => {
     // Connect to Metamask
     // Since we store `web3Modal` as a reference, we need to access the `current` value to get access to the underlying object
@@ -66,6 +67,27 @@ export default function Home() {
       // call createMultiSigWallet from the contract
       console.log(String(viewWalletString));
       const tx = await multsigContract.createMultiSigWallet(String(viewWalletString), ["0xa8430797A27A652C03C46D5939a8e7698491BEd6","0xa8430797A27A652C03C46D5939a8e7698491BEd6"]);
+      // wait for the transaction to get mined
+      await tx.wait();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+
+  const createTransactionX = async () => {
+    try {
+      // We need a Signer here since this is a 'write' transaction.
+      const signer = await getProviderOrSigner(true);
+      // Create a new instance of the Contract with a Signer, which allows
+      // update methods
+      const multsigContract = new Contract(
+        MULTISIG_ADDRESS,
+        abi,
+        signer
+      );
+
+      const tx = await multsigContract.createTransaction(String(viewWalletForTxn), String(viewDepositAddressForTxn), String(viewDepositAmountForTxn));
       // wait for the transaction to get mined
       await tx.wait();
     } catch (err) {
@@ -182,6 +204,31 @@ export default function Home() {
     };
 
 
+    const createTransactionButton = () => {
+      if (walletConnected) {
+          return (
+            <div>
+              <input
+                placeholder="Enter wallet name"
+                onChange={walletNameForTxn}
+              />
+              <input
+                placeholder="Enter deposit address"
+                onChange={depositAddressForTxn}
+              />
+              <input
+                placeholder="Enter deposit amount"
+                onChange={depositAmountForTxn}
+              />
+              <button onClick={createTransactionX} className={styles.button}>
+                Create transaction
+              </button>
+            </div>
+          );
+      }
+    };
+
+
   useEffect(() => {
     // if wallet is not connected, create a new instance of Web3Modal and connect the MetaMask wallet
     if (!walletConnected) {
@@ -218,7 +265,9 @@ export default function Home() {
             {createWalletButton()}
             {viewWalletButton()}
             {viewWalletAmountButton()}
-        </div>
+            <p></p>
+            {createTransactionButton()}
+        </div>  
 
         
       </div>
