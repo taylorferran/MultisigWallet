@@ -12,9 +12,12 @@ export default function Home() {
   const [viewWalletForTxn, setWalletForTxn] = useState("");
   const [viewDepositAddressForTxn, setDepositAddressForTxn] = useState("");
   const [viewDepositAmountForTxn, setDepositAmountForTxn] = useState("");
+  const [walletExists, setWalletExists] = useState("false");
 
   const walletName = event => {
     setViewWalletString(event.target.value);
+    viewWallet();
+    viewWalletAmount();
   };
 
   const walletNameForTxn = event => {
@@ -100,22 +103,22 @@ export default function Home() {
    */
      const viewWallet = async () => {
       try {
-        // We need a Signer here since this is a 'write' transaction.
         const signer = await getProviderOrSigner(true);
-        // Create a new instance of the Contract with a Signer, which allows
-        // update methods
+
         const multsigContract = new Contract(
           MULTISIG_ADDRESS,
           abi,
           signer
         );
         const tx = await multsigContract.checkWalletExists(String(viewWalletString));
+        
 
         if(tx) {
-          alert("Wallet exists");
+          console.log("Wallet exists");
+          setWalletExists(1);
         }
-        alert
       } catch (err) {
+        setWalletExists(0);
         console.error(err);
       }
     };
@@ -125,10 +128,8 @@ export default function Home() {
    */
      const viewWalletAmount = async () => {
       try {
-        // We need a Signer here since this is a 'write' transaction.
         const signer = await getProviderOrSigner(true);
-        // Create a new instance of the Contract with a Signer, which allows
-        // update methods
+
         const multsigContract = new Contract(
           MULTISIG_ADDRESS,
           abi,
@@ -136,7 +137,7 @@ export default function Home() {
         );
         const tx = await multsigContract.checkWalletAmount(String(viewWalletString));
 
-        alert(tx);
+        console.log(tx);
 
       } catch (err) {
         console.error(err);
@@ -162,11 +163,26 @@ export default function Home() {
     createWalletButton
   */
   const createWalletButton = () => {
+    if (walletConnected && walletExists == 0) {
+        return (
+          <div className={styles.createWallet}>
+            <button onClick={createMultiSigWallet}>
+              Create multisig wallet
+            </button>
+          </div>
+        );
+    }
+  };
+
+  const walletNameInput = () => {
     if (walletConnected) {
         return (
-          <button onClick={createMultiSigWallet} className={styles.button}>
-            Create multisig wallet
-          </button>
+          <div className={styles.walletName}>
+            <input
+              placeholder="Wallet Name"
+              onChange={walletName}
+            />
+          </div>
         );
     } else {
       return (
@@ -205,7 +221,7 @@ export default function Home() {
 
 
     const createTransactionButton = () => {
-      if (walletConnected) {
+      if (walletConnected && walletExists == 1) {
           return (
             <div>
               <input
@@ -250,27 +266,13 @@ export default function Home() {
         <meta name="description" content="Multisig-Dapp" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className={styles.main}>
-        <div>
-          <h1 className={styles.title}>This is a multisig dapp</h1>
-          <div className={styles.description}>
-            It's a multisig wallet decentralized application on Ethereum.
-          </div>
+        <div id={styles.pageHeader}>
 
-          <input
-            placeholder="Wallet Name"
-            onChange={walletName}
-            className={styles.input}
-            />
+          <h1 className={styles.title}>Multisignatooor</h1>
+        </div>
+            {walletNameInput()}
             {createWalletButton()}
-            {viewWalletButton()}
-            {viewWalletAmountButton()}
-            <p></p>
             {createTransactionButton()}
-        </div>  
-
-        
-      </div>
     </div>
   );
 }
